@@ -1,0 +1,42 @@
+body {
+    background-color: wheat;
+}
+
+nav a {
+    color: olive;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin: 5px;
+    padding: 5px; 
+}
+
+h2 {
+    color: brown;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin: 15px;
+}
+
+p, li, table {
+    color: saddlebrown;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin: 15px;
+}
+
+th, td {
+    padding: 5px;
+    text-align: center;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.index_header {
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    color: brown;
+}
+
+#about_me_header {
+    color: darkslateblue;
+}
+
