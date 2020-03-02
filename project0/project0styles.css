@@ -21,6 +21,10 @@ p, li, table {
     margin: 15px;
 }
 
+p a {
+    color: tomato;
+}
+
 th, td {
     padding: 5px;
     text-align: center;
@@ -38,5 +42,17 @@ img {
 
 #about_me_header {
     color: darkslateblue;
+}
+
+@media (min-width: 1000px) {
+    p, li, table {
+        font-size: medium;
+    }
+}
+
+@media (max-width: 999px) {
+    p, li, table {
+        font-size: small;
+    }
 }
 
