@@ -1,0 +1,42 @@
+$font: Verdana, Geneva, Tahoma, sans-serif;
+
+%navbar {
+    font-size: medium
+}
+
+nav {
+    margin: 5px;
+    padding: 5px; 
+
+    a   {
+        font-family: $font
+    }
+
+}
+
+.front {
+    @extend %navbar;
+    color: olive;
+}
+
+.project {
+    @extend %navbar;
+    color: brown;
+}
+
+.course {
+    @extend %navbar;
+    color: darkorange;
+}
+
+.library {
+    @extend %navbar;
+    color: darkviolet;
+}
+
+.me {
+    @extend %navbar;
+    color: coral;
+}
+
+    

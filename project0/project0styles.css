@@ -1,14 +1,7 @@
 body {
     background-color: wheat;
 }
-
-nav a {
-    color: olive;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
-    margin: 5px;
-    padding: 5px; 
-}
-
+c
 h2 {
     color: brown;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
@@ -42,6 +35,8 @@ img {
 
 #about_me_header {
     color: darkslateblue;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin: 15px;
 }
 
 @media (min-width: 1000px) {

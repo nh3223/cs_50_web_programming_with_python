@@ -1,0 +1,33 @@
+.me, .library, .course, .project, .front {
+  font-size: medium;
+}
+
+nav {
+  margin: 5px;
+  padding: 5px;
+}
+nav a {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.front {
+  color: olive;
+}
+
+.project {
+  color: brown;
+}
+
+.course {
+  color: darkorange;
+}
+
+.library {
+  color: darkviolet;
+}
+
+.me {
+  color: coral;
+}
+
+/*# sourceMappingURL=navbarstyles.css.map */
