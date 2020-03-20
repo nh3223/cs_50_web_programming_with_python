@@ -2,4 +2,28 @@
 
 {% block title %}Login Page{% endblock %}
 
-{% block body %}Book Review Login Page (extended from layout.html){% endblock %}
+{% block body %}
+
+    <h1>Log In</h1>
+    <form action="" method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.username.label }}<br>
+            {{ form.username(size=32) }}
+            {% for error in form.username.errors %}
+                [{{ error }}]
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.password.label }}<br>
+            {{ form.password(size=32) }}
+            {% for error in form.password.errors %}
+                [{{ error }}]
+            {% endfor %}
+        </p>
+        <p>
+            {{ form.submit() }}
+        </p>
+    </form> 
+
+{% endblock %}
