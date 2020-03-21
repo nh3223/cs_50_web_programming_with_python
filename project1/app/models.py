@@ -3,6 +3,7 @@ import os
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
+from app import db
 
 class Book(db.Model):
     __tablename__ = "books"
