@@ -33,16 +33,14 @@ def search():
         
     return render_template("search.html", title="Search Books" form=form)
 
-@app.route("/book/<book>", )
+@app.route("/book/<book>", methods=['GET','POST'])
 def book():
-    return render_template("book.html")
-
-@app.route("/login", methods=['GET','POST'])
-def login():
-    form = Login_Form()
+    form = Review_Form
     if form.validate_on_submit():
-        return redirect(url_for("search"))
-    return render_template("login.html", title="Log In", form=form)
+        flash('Thank you for your review!')
+        review = Review(rating=form.rating.data, review=form.review.data, user_id=user.id, book_id=<book>.id)
+        return redirect(url_for('user'))
+    return render_template("book.html", title=<book>, form=form)
 
 @app.route('/user/<username>')
 @login_required
