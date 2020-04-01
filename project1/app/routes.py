@@ -10,7 +10,7 @@ from werkzeug.urls import url_parse
 @login_required
 def index():
     page = request.args.get('page', 1, type=int)
-    reviews = current_user.reviews.paginate(page, app.config['POSTS_PER_PAGE'], False)
+    reviews = current_user.reviews.paginate(page, app.config['REVIEWS_PER_PAGE'], False)
     next_url = url_for('index', page=reviews.next_num) if reviews.has_next else None
     prev_url = url_for('index', page=reviews.prev_num) if reviews.has_prev else None
     return render_template('index.html', title = 'Home', reviews=reviews.items, next_url=next_url, prev_url=prev_url)
@@ -66,6 +66,7 @@ def search():
 
 @app.route("/book/<isbn>", methods=['GET','POST'])
 def book(isbn):
+    print(isbn)
     book=Book.query.filter_by(isbn=isbn).first_or_404()
     #form = Review_Form()
     #if form.validate_on_submit():
@@ -76,4 +77,4 @@ def book(isbn):
     #reviews = book.reviews.paginate(page, app.config['REVIEWS_PER_PAGE'], False)
     #next_url = url_for('book', isbn=book.isbn, page=reviews.next_num) if reviews.has_next else None
     #prev_url = url_for('book', isbn=book.isbn, page=reviews.prev_num) if reviews.has_prev else None
-    return render_template("book.html", title=book.title)#, form=form, reviews=reviews.items, next_url=next_url, prev_url=prev_url
+    return render_template("book.html", book=book)#, form=form, reviews=reviews.items, next_url=next_url, prev_url=prev_url
