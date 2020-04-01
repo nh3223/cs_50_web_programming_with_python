@@ -7,18 +7,49 @@ from werkzeug.urls import url_parse
 
 @app.route("/", methods=['GET','POST'])
 @app.route("/index", methods=['GET','POST'])
+@login_required
 def index():
+    page = request.args.get('page', 1, type=int)
+    reviews = current_user.reviews.paginate(page, app.config['POSTS_PER_PAGE'], False)
+    next_url = url_for('index', page=reviews.next_num) if reviews.has_next else None
+    prev_url = url_for('index', page=reviews.prev_num) if reviews.has_prev else None
+    return render_template('index.html', title = 'Home', reviews=reviews.items, next_url=next_url, prev_url=prev_url)
+
+@app.route('/login', methods=['GET','POST'])
+def login():
     if current_user.is_authenticated:
-        return redirect(url_for('user/<current_user>'))
-    form = Login_Form
+        return redirect(url_for('index'))
+    form = Login_Form()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
-            return redirect(url_for('index'))
+            return redirect(url_for('login'))
         login_user(user)
-        return redirect(url_for('user/<user>'))
-    return render_template("index.html", title="Home", form=form)
+        next_page = request.args.get('next')
+        if not next_page or url_parse(next_page).netloc != '':
+            next_page = url_for('index')
+        return redirect(next_page)
+    return render_template('login.html', title='Sign In', form=form)
+
+@app.route('/logout')
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
+@app.route('/register', methods=['GET','POST'])
+def register():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = Registration_Form()
+    if form.validate_on_submit():
+        user = User(username=form.username.data)
+        user.set_password(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Register', form=form)
 
 @app.route("/search")
 def search():
@@ -31,24 +62,18 @@ def search():
             flash('Please enter a search request.')
             return redirect(url_for('search'))
         
-    return render_template("search.html", title="Search Books" form=form)
+    return render_template("search.html", title="Search Books", form=form)
 
-@app.route("/book/<book>", methods=['GET','POST'])
-def book():
-    form = Review_Form
-    if form.validate_on_submit():
-        flash('Thank you for your review!')
-        review = Review(rating=form.rating.data, review=form.review.data, user_id=user.id, book_id=<book>.id)
-        return redirect(url_for('user'))
-    return render_template("book.html", title=<book>, form=form)
-
-@app.route('/user/<username>')
-@login_required
-def user(username):
-    user=User.query.filter_by(username=username).first_or_404()
+@app.route("/book/<isbn>", methods=['GET','POST'])
+def book(isbn):
+    book=Book.query.filter_by(isbn=isbn).first_or_404()
+    #form = Review_Form()
+    #if form.validate_on_submit():
+    #    flash('Thank you for your review!')
+    #    review = Review(rating=form.rating.data, review=form.review.data, user_id=current_user.id, book_id=book.id)
+    #    return redirect(url_for('book', isbn=book.isbn))
     page = request.args.get('page', 1, type=int)
-    reviews = user.reviews.paginate(page, app.config['POSTS_PER_PAGE'], False)
-    next_url = url_for('user', username=user.username, page=reviews.next_num) if reviews.has_next else None
-    prev_url = url_for('user', username=user.username, page=reviews.prev_num) if reviews.has_prev else None
-    return render_template('user.html', user=user, reviews=reviews.items,
-                            next_url=next_url, prev_url=prev_url)
+    #reviews = book.reviews.paginate(page, app.config['REVIEWS_PER_PAGE'], False)
+    #next_url = url_for('book', isbn=book.isbn, page=reviews.next_num) if reviews.has_next else None
+    #prev_url = url_for('book', isbn=book.isbn, page=reviews.prev_num) if reviews.has_prev else None
+    return render_template("book.html", title=book.title)#, form=form, reviews=reviews.items, next_url=next_url, prev_url=prev_url

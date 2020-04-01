@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, TextAreaField, PasswordField, RadioField, SubmitField
+from wtforms import StringField, TextAreaField, PasswordField, RadioField, SelectField, SubmitField
 from wtforms.validators import DataRequired, ValidationError, EqualTo, Length
 from app.models import User
 
@@ -20,13 +20,13 @@ class Registration_Form(FlaskForm):
             raise ValidationError('Please use a different username.')
 
 class Search_Form(FlaskForm):
-    isbn = StringField('ISBN Number')
-    author = StringField('Author')
-    title = StringField('Title')
+    search_term = StringField('ISBN/Author/Title', validators = [DataRequired()])
+    search_type = SelectField(u'Search Type', choices=[('ISBN','ISBN'),('Author','Author'),('Title','Title')], 
+                                validators = [DataRequired()])
     submit = SubmitField('Search')
 
 class Review_Form(FlaskForm):
-    rating = RadioField('Rating', choices=[1,2,3,4,5])
+    rating = RadioField('Rating', choices=[(1,'1'),(2,'2'),(3,'3'),(4,'4'),(5,'5')])
     review = TextAreaField('Review', Length(min=1, max=1400))
     submit = SubmitField('Save Review')
 

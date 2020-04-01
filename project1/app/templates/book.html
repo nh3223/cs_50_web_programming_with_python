@@ -1,5 +1,38 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
-{% block title %}Book Page{% endblock %}
-
-{% block body %}Book Review Book Page (extended from layout.html){% endblock %}
+{% block app_content %}
+    <table>
+        <tr valign="top">
+            <td>
+                <h1>Title: {{ book.title }}</h1>
+                <p>Author: {{ book.author }}</p>
+                <p>Year Published: {{ book.year }}</p>
+                <p>ISBN Number: {{ book.isbn }}</p>
+            </td>
+        </tr>
+    </table>
+    <hr>
+    {% if form %}
+        {{ wtf.quick_form(form) }}
+        <br>
+    {% endif %}
+    <hr>   
+    {% for review in reviews %}
+        {% include '_review.html' %}
+    {% endfor %}
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span>Newer Reviews
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    Older Reviews<span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+{% endblock %}
