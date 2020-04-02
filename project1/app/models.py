@@ -3,12 +3,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
 class Book(db.Model):
-    id      = db.Column(db.Integer, primary_key=True)
-    isbn    = db.Column(db.String, nullable=False)
-    title   = db.Column(db.String, nullable=False)
-    author  = db.Column(db.String, nullable=False)
-    year    = db.Column(db.Integer, nullable=False)
-    reviews = db.relationship("Review", backref="book", lazy=True)
+    id          = db.Column(db.Integer, primary_key=True)
+    isbn        = db.Column(db.String, nullable=False)
+    book_title  = db.Column(db.String, nullable=False)
+    author      = db.Column(db.String, nullable=False)
+    year        = db.Column(db.Integer, nullable=False)
+    reviews     = db.relationship("Review", backref="book", lazy="dynamic")
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer,primary_key=True)

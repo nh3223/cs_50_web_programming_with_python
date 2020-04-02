@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, PasswordField, RadioField, SelectField, SubmitField
 from wtforms.validators import DataRequired, ValidationError, EqualTo, Length
-from app.models import User
+from app.models import User, Book, Review
 
 class Login_Form(FlaskForm):
     username = StringField('Username', validators = [DataRequired()])
@@ -21,13 +21,13 @@ class Registration_Form(FlaskForm):
 
 class Search_Form(FlaskForm):
     search_term = StringField('ISBN/Author/Title', validators = [DataRequired()])
-    search_type = SelectField(u'Search Type', choices=[('ISBN','ISBN'),('Author','Author'),('Title','Title')], 
+    search_type = SelectField(u'Search Type', choices=[('isbn','ISBN'),('author','Author'),('book_title','Title')], 
                                 validators = [DataRequired()])
     submit = SubmitField('Search')
 
 class Review_Form(FlaskForm):
     rating = RadioField('Rating', choices=[(1,'1'),(2,'2'),(3,'3'),(4,'4'),(5,'5')])
-    review = TextAreaField('Review', Length(min=1, max=1400))
+    review = TextAreaField('Review', validators=[Length(min=1, max=1400)])
     submit = SubmitField('Save Review')
 
 

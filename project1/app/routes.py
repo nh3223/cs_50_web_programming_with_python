@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, session
 from app import app, db
 from app.forms import Login_Form, Registration_Form, Search_Form, Review_Form
 from app.models import User, Book, Review
@@ -51,30 +51,25 @@ def register():
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
-@app.route("/search")
+@app.route("/search", methods=['GET','POST'])
+@login_required
 def search():
-    form = Search_Form
+    form = Search_Form()
     if form.validate_on_submit():
-        isbn = Book.query.filter_by(isbn=form.isbn.data).first()
-        title = Book.query.filter_by(title=form.title.data)
-        author = Book.query.filter_by(author=author.title.data)
-        if isbn is None and title is None and author is None:
-            flash('Please enter a search request.')
-            return redirect(url_for('search'))
-        
+        books = Book.query.filter(getattr(Book, form.search_type.data).contains(form.search_term.data)).all()
+        return render_template("search.html", title="Search Results", books=books, form=form)
     return render_template("search.html", title="Search Books", form=form)
 
 @app.route("/book/<isbn>", methods=['GET','POST'])
 def book(isbn):
-    print(isbn)
     book=Book.query.filter_by(isbn=isbn).first_or_404()
-    #form = Review_Form()
-    #if form.validate_on_submit():
-    #    flash('Thank you for your review!')
-    #    review = Review(rating=form.rating.data, review=form.review.data, user_id=current_user.id, book_id=book.id)
-    #    return redirect(url_for('book', isbn=book.isbn))
+    form = Review_Form()
+    if form.validate_on_submit():
+        flash('Thank you for your review!')
+        review = Review(rating=form.rating.data, review=form.review.data, user_id=current_user.id, book_id=book.id)
+        return redirect(url_for('book', isbn=book.isbn))
     page = request.args.get('page', 1, type=int)
-    #reviews = book.reviews.paginate(page, app.config['REVIEWS_PER_PAGE'], False)
-    #next_url = url_for('book', isbn=book.isbn, page=reviews.next_num) if reviews.has_next else None
-    #prev_url = url_for('book', isbn=book.isbn, page=reviews.prev_num) if reviews.has_prev else None
-    return render_template("book.html", book=book)#, form=form, reviews=reviews.items, next_url=next_url, prev_url=prev_url
+    reviews = book.reviews.paginate(page, app.config['REVIEWS_PER_PAGE'], False)
+    next_url = url_for('book', isbn=book.isbn, page=reviews.next_num) if reviews.has_next else None
+    prev_url = url_for('book', isbn=book.isbn, page=reviews.prev_num) if reviews.has_prev else None
+    return render_template("book.html", book=book, form=form)#, reviews=reviews.items, next_url=next_url, prev_url=prev_url)

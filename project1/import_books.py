@@ -9,10 +9,10 @@ def main():
         next(booklist)
         num = 1
         for row in booklist:
-            book = Book(isbn=row[0], title=row[1], author=row[2], year=row[3])
+            book = Book(isbn=row[0], book_title=row[1], author=row[2], year=row[3])
             db.session.add(book)
             db.session.commit()
-            print(f'{num} {book.title}')
+            print(f'{num} {book.book_title}')
             num += 1
             
 if __name__ == "__main__":
