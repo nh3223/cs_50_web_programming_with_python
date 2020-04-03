@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, request, session
+from flask import render_template, flash, redirect, url_for, request
 from app import app, db
 from app.forms import Login_Form, Registration_Form, Search_Form, Review_Form
 from app.models import User, Book, Review
@@ -66,10 +66,13 @@ def book(isbn):
     form = Review_Form()
     if form.validate_on_submit():
         flash('Thank you for your review!')
-        review = Review(rating=form.rating.data, review=form.review.data, user_id=current_user.id, book_id=book.id)
+        review = Review(rating=int(form.rating.data), review=form.review.data, user_id=current_user.id, book_id=book.id)
+        db.session.add(review)
+        db.session.commit()
         return redirect(url_for('book', isbn=book.isbn))
     page = request.args.get('page', 1, type=int)
     reviews = book.reviews.paginate(page, app.config['REVIEWS_PER_PAGE'], False)
+    print(reviews.items[0].rating)
     next_url = url_for('book', isbn=book.isbn, page=reviews.next_num) if reviews.has_next else None
     prev_url = url_for('book', isbn=book.isbn, page=reviews.prev_num) if reviews.has_prev else None
-    return render_template("book.html", book=book, form=form)#, reviews=reviews.items, next_url=next_url, prev_url=prev_url)
+    return render_template("book.html", book=book, form=form, reviews=reviews.items, next_url=next_url, prev_url=prev_url)

@@ -26,8 +26,8 @@ class Search_Form(FlaskForm):
     submit = SubmitField('Search')
 
 class Review_Form(FlaskForm):
-    rating = RadioField('Rating', choices=[(1,'1'),(2,'2'),(3,'3'),(4,'4'),(5,'5')])
-    review = TextAreaField('Review', validators=[Length(min=1, max=1400)])
+    rating = RadioField('Rating', choices=[('1','1'),('2','2'),('3','3'),('4','4'),('5','5')], validators=[DataRequired()])
+    review = TextAreaField('Review', validators=[DataRequired(),Length(min=1, max=1400)])
     submit = SubmitField('Save Review')
 
 

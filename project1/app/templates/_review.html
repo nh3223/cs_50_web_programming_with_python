@@ -1,17 +1,4 @@
-<table>
-    <tr>
-        <td>
-            Reviewer:
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Rating:
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Review:
-        </td>
-    </tr>
-</table>
+<tr><td>Reviewer: {{ review.user.username }}</td></tr>
+<tr><td>Rating:  {{ review.rating }}</td></tr>
+<tr><td>Review:  {{ review.review }}</td></tr>
+<hr>

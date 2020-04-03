@@ -4,7 +4,11 @@
 {% block app_content %}
     <h1>My Reviews</h1>
     {% for review in reviews %}
-        {% include '_review.html' %}
+        <table>
+            <tr><td>Title:  {{ review.book.book_title}}</td></tr>
+            <tr><td>Autor:  {{ review.book.author }}</td></tr>
+            {% include '_review.html' %}
+        </table>
     {% endfor %}
     <nav aria-label="...">
         <ul class="pager">

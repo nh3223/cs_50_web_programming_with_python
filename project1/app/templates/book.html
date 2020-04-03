@@ -18,8 +18,11 @@
         <br>
     {% endif %}
     <hr>   
+    <h2>Reviews</h2>
     {% for review in reviews %}
-        {% include '_review.html' %}
+        <table>
+            {% include '_review.html' %}
+        </table>
     {% endfor %}
     <nav aria-label="...">
         <ul class="pager">
