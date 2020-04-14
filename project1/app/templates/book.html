@@ -12,6 +12,13 @@
             </td>
         </tr>
     </table>
+    <table>
+        <tr valign="top"><h2>Goodreads Review Statistics</h2></tr>
+        <tr>
+            <p>Number of Reviews: {{ goodreads['number_of_ratings'] }}</p>
+            <p>Avergae Rating: {{ goodreads['average_rating'] }}</p>
+        </tr>
+    </table>
     <hr>
     {% if form %}
         {{ wtf.quick_form(form) }}

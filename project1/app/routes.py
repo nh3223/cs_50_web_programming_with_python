@@ -4,6 +4,7 @@ from app.forms import Login_Form, Registration_Form, Search_Form, Review_Form
 from app.models import User, Book, Review
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
+import requests
 
 @app.route("/", methods=['GET','POST'])
 @app.route("/index", methods=['GET','POST'])
@@ -62,7 +63,13 @@ def search():
 
 @app.route("/book/<isbn>", methods=['GET','POST'])
 def book(isbn):
+    GOODREADS_KEY='mnxb1MhpDSrxdVn6QSDbg'
     book=Book.query.filter_by(isbn=isbn).first_or_404()
+    goodreads_data = requests.get('https://www.goodreads.com/book/review_counts.json', 
+                                   params={'key': GOODREADS_KEY, 'isbns': isbn})
+    goodreads_data = goodreads_data.json()
+    goodreads = {'number_of_ratings': goodreads_data['books'][0]['work_ratings_count'],
+                 'average_rating': goodreads_data['books'][0]['average_rating']}
     form = Review_Form()
     if form.validate_on_submit():
         flash('Thank you for your review!')
@@ -75,4 +82,4 @@ def book(isbn):
     print(reviews.items[0].rating)
     next_url = url_for('book', isbn=book.isbn, page=reviews.next_num) if reviews.has_next else None
     prev_url = url_for('book', isbn=book.isbn, page=reviews.prev_num) if reviews.has_prev else None
-    return render_template("book.html", book=book, form=form, reviews=reviews.items, next_url=next_url, prev_url=prev_url)
+    return render_template("book.html", goodreads=goodreads, book=book, form=form, reviews=reviews.items, next_url=next_url, prev_url=prev_url)
