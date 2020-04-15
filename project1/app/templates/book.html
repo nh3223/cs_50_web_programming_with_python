@@ -16,12 +16,19 @@
         <tr valign="top"><h2>Goodreads Review Statistics</h2></tr>
         <tr>
             <p>Number of Reviews: {{ goodreads['number_of_ratings'] }}</p>
-            <p>Avergae Rating: {{ goodreads['average_rating'] }}</p>
+            <p>Average Rating: {{ goodreads['average_rating'] }}</p>
         </tr>
     </table>
     <hr>
     {% if form %}
-        {{ wtf.quick_form(form) }}
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            {{ wtf.form_errors(form, hiddens="only")}}
+            {{ form.rating.label }}
+            {{ wtf.form_field(form.rating, form_type='inline') }}
+            {{ wtf.form_field(form.review, rows= '15', cols='90') }}
+            {{ wtf.form_field(form.submit) }}
+        </form>
         <br>
     {% endif %}
     <hr>   

@@ -1,4 +1,4 @@
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, jsonify
 from app import app, db
 from app.forms import Login_Form, Registration_Form, Search_Form, Review_Form
 from app.models import User, Book, Review
@@ -63,13 +63,24 @@ def search():
 
 @app.route("/book/<isbn>", methods=['GET','POST'])
 def book(isbn):
-    GOODREADS_KEY='mnxb1MhpDSrxdVn6QSDbg'
     book=Book.query.filter_by(isbn=isbn).first_or_404()
+    
+    GOODREADS_KEY='mnxb1MhpDSrxdVn6QSDbg'
+    
     goodreads_data = requests.get('https://www.goodreads.com/book/review_counts.json', 
                                    params={'key': GOODREADS_KEY, 'isbns': isbn})
     goodreads_data = goodreads_data.json()
     goodreads = {'number_of_ratings': goodreads_data['books'][0]['work_ratings_count'],
-                 'average_rating': goodreads_data['books'][0]['average_rating']}
+                 'average_rating': goodreads_data['books'][0]['average_rating']}   
+    page = request.args.get('page', 1, type=int)
+    reviews = book.reviews.paginate(page, app.config['REVIEWS_PER_PAGE'], False)
+    next_url = url_for('book', isbn=book.isbn, page=reviews.next_num) if reviews.has_next else None
+    prev_url = url_for('book', isbn=book.isbn, page=reviews.prev_num) if reviews.has_prev else None
+    
+    for review in book.reviews:
+        if review in current_user.reviews:
+            return render_template("book.html",goodreads=goodreads, book=book, reviews=reviews.items, next_url=next_url, prev_url=prev_url)
+            
     form = Review_Form()
     if form.validate_on_submit():
         flash('Thank you for your review!')
@@ -77,9 +88,26 @@ def book(isbn):
         db.session.add(review)
         db.session.commit()
         return redirect(url_for('book', isbn=book.isbn))
-    page = request.args.get('page', 1, type=int)
-    reviews = book.reviews.paginate(page, app.config['REVIEWS_PER_PAGE'], False)
-    print(reviews.items[0].rating)
-    next_url = url_for('book', isbn=book.isbn, page=reviews.next_num) if reviews.has_next else None
-    prev_url = url_for('book', isbn=book.isbn, page=reviews.prev_num) if reviews.has_prev else None
+    
     return render_template("book.html", goodreads=goodreads, book=book, form=form, reviews=reviews.items, next_url=next_url, prev_url=prev_url)
+
+
+@app.route("/api/<isbn>")
+def book_api(isbn):
+    book = Book.query.filter_by(isbn=isbn).first()
+    print(type(book))
+    if book is None:
+        return jsonify({"error": "Invalid isbn"}), 422
+    print(book.reviews)
+    number_of_reviews = sum([1 for review in book.reviews])
+    if number_of_reviews == 0:
+        average_rating = 0
+    else:
+        average_rating = sum([review.rating for review in book.reviews]) / number_of_reviews
+    
+    return jsonify({"Title": book.book_title,
+                    "Author": book.author,
+                    "Year": book.year,
+                    "ISBN": book.isbn,
+                    "Number of Reviews": number_of_reviews,
+                    "Average Rating": average_rating})
