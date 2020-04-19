@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='project2.css') }}">
+</head>
+
+<body>
+    <h1>{{ channel_name }}</h1>
+    <p>{{ messages }}</p>
+</body>
+
+<footer>
+    <script src="{{ url_for('static', filename='project2_display_name.js') }}"></script>
+    <script src="{{ url_for('static', filename='project2_channels.js') }}"></script>
+    <!--<script src="{{ url_for('static', filename='project2_messages.js') }}"></script>-->
+</footer>
+
+</html>

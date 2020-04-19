@@ -1,6 +1,37 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html>
 
-{% block app_content %}
-    <h1>Hello!</h1>
-{% endblock %}
+    <head>
+        <title>{{ title }}</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='project2.css') }}">
+    </head>
 
+    <body>
+        
+        <h1 id="Greeting"></h1>
+        <button id="not_name"></button>
+        <form id="display_name_form">
+            <input type="submit" value="Enter Display Name">
+            <input id="display_name" autocomplete="off" type="text">
+        </form>
+
+        <br>
+        
+        <form action="" method="post">
+            {{ form.hidden_tag() }}
+            <p>{{ form.channel.label }}    {{ form.channel(size=64) }}</p>
+            <p>{{ form.submit() }}</p>
+        </form>
+
+        <br>
+        
+        <h2>Existing Channels</h2>
+        {% for channel in channels %}
+            <a href="{{ url_for('channel', channel_name=channel) }}">{{ channel }}</a><br>
+        {% endfor %}        
+       
+    </body>
+
+    <footer>
+        <script src="{{ url_for('static', filename='project2_display_name.js') }}"></script>
+    </footer>
