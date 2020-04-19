@@ -5,12 +5,14 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField
 from wtforms.validators import DataRequired
 from flask_socketio import SocketIO, emit
+import datetime
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY") or 'this-is-the-secret-key'
 socketio = SocketIO(app)
 
-channels = { 'test channel': ['message 1', 'message 2'] }
+channels = { 'test channel': [{'text': 'message 2', 'display_name': 'Neal', 'timestamp': datetime.datetime(2020, 4, 19, 16, 10, 10, 181420)},
+                              {'text': 'message 1', 'display_name': 'Nathan', 'timestamp': datetime.datetime(2020, 4, 19, 12, 29, 46, 181420)}] }
 
 class New_Channel_Form(FlaskForm):
     channel = StringField('Channel Name', validators=[DataRequired()])
@@ -32,4 +34,6 @@ def index():
 @app.route("/channel/<channel_name>")
 def channel(channel_name):
     messages = channels[channel_name]
+    print(channel_name)
+    print(messages)
     return render_template('channel.html', title=channel_name, channel_name=channel_name, messages=messages)
