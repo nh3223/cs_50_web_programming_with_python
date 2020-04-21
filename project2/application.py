@@ -33,7 +33,15 @@ def index():
 
 @app.route("/channel/<channel_name>")
 def channel(channel_name):
-    messages = channels[channel_name]
-    print(channel_name)
-    print(messages)
-    return render_template('channel.html', title=channel_name, channel_name=channel_name, messages=messages)
+    channel_data = { 'channel_name': channel_name, 'messages': channels[channel_name]}
+    return render_template('channel.html', title=channel_name, channel_data=channel_data)
+
+@socketio.on("submit message")
+def vote(data):
+    channel_name = data['channel_name']
+    message_data = { 'text': data['message_text'],
+                     'display_name': data['user_name'],
+                     'timestamp': datetime.datetime.now() }
+    channels[channel_name].append(message_data)
+    print(channels)
+    emit("announce vote", message_data, broadcast=True)
