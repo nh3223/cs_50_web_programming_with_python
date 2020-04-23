@@ -5,13 +5,15 @@
     <title>{{ title }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='project2.css') }}">
     <script>var channel_data = JSON.parse('{{ channel_data | tojson }}');</script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <script src="{{ url_for('static', filename='project2_channels.js') }}"></script>
 </head>
 
 <body>
     <h1></h1>
     
     <form id="message_form">
-        <input type="submit" value="Enter Message">
+        <button id ="enter_message" type="button">Enter Message</button>
         <input id="message_text" autocomplete="off" type="text">
     </form>
     
@@ -22,9 +24,7 @@
 </body>
 
 <footer>
-    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
-    <script src="{{ url_for('static', filename='project2_display_name.js') }}"></script>
-    <script src="{{ url_for('static', filename='project2_channels.js') }}"></script>
+
     <!--<script src="{{ url_for('static', filename='project2_messages.js') }}"></script>-->
 </footer>
 

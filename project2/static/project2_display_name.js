@@ -7,10 +7,10 @@ function welcome(user_name) {
             (4) Upon clicking the button, hides the greeting and button, and calls the get_user_name function*/
 
     document.querySelector('#display_name_form').style.visibility="hidden";
-    document.querySelector('#Greeting').innerHTML = 'Hello, ' + user_name;
+    document.querySelector('#greeting').innerHTML = 'Hello, ' + user_name;
     document.querySelector('#not_name').innerHTML = 'Not ' + user_name + '?';
     document.querySelector('#not_name').onclick = () => {
-        document.querySelector('#Greeting').style.visibility="hidden";
+        document.querySelector('#greeting').style.visibility="hidden";
         document.querySelector('#not_name').style.visibility="hidden";
         get_user_name();
     }
@@ -32,9 +32,9 @@ function get_user_name() {
 // If a user_name is saved in localStorage, calls the welcome function, otherwise calls the get_user_name function.
 
 if(localStorage.getItem('user_name')) {
+    var user_name = localStorage.getItem('user_name')
     welcome(localStorage.getItem('user_name'));   
 } else {
     get_user_name();
 }
 
-document.querySelector('#')

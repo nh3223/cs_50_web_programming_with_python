@@ -4,34 +4,31 @@
     <head>
         <title>{{ title }}</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='project2.css') }}">
+        <script>var channels = JSON.parse('{{ channels | tojson }}');</script>
     </head>
 
     <body>
         
-        <h1 id="Greeting"></h1>
+        <h1 id="greeting"></h1>
         <button id="not_name"></button>
         <form id="display_name_form">
-            <input type="submit" value="Enter Display Name">
+            <input type="submit" value="Enter Display Name" >
             <input id="display_name" autocomplete="off" type="text">
         </form>
 
         <br>
-        
-        <form action="" method="post">
-            {{ form.hidden_tag() }}
-            <p>{{ form.channel.label }}    {{ form.channel(size=64) }}</p>
-            <p>{{ form.submit() }}</p>
+
+        <form id="new_channel_form" onsubmit="return new_channel()">
+            <input type="submit" id="new_channel_submit">
+            <input id="new_channel_name" autocomplete="off" type="text">
         </form>
 
-        <br>
-        
         <h2>Existing Channels</h2>
-        {% for channel in channels %}
-            <a href="{{ url_for('channel', channel_name=channel) }}">{{ channel }}</a><br>
-        {% endfor %}        
-       
+        <ul id="channel_list"></ul>
+
     </body>
 
     <footer>
         <script src="{{ url_for('static', filename='project2_display_name.js') }}"></script>
+        <script src="{{ url_for('static', filename='project2_channels.js') }}"></script>
     </footer>
