@@ -18,22 +18,29 @@
 
         <br>
 
-        <form id="new_channel_form" onsubmit="return new_channel()">
-            <input type="submit" id="new_channel_submit">
+        <form id="new_channel_form">
+            <input type="submit" id="new_channel_submit" value="Create Channel">
             <input id="new_channel_name" autocomplete="off" type="text">
         </form>
-
+        
         <h2>Existing Channels</h2>
         <ul id="channel_list"></ul>
 
+        <br>
+
         <div id="show_messages">
-            <h2 id="messages_title"></h2>
+            <h2 id="channel_name"></h2>
+            <form id="message_form">
+                <input type="submit" id="new_message_submit" value="Send Message">
+                <input id="message_text" autocomplete="off" type="text">
+            </form>
             <table id="message_list"></table>
         </div>
 
     </body>
 
     <footer>
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
         <script src="{{ url_for('static', filename='project2_display_name.js') }}"></script>
         <script src="{{ url_for('static', filename='project2_channels.js') }}"></script>
         <script src="{{ url_for('static', filename='project2_messages.js') }}"></script>

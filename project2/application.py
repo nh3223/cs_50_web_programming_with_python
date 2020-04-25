@@ -25,14 +25,13 @@ def create_channel():
         return jsonify({'success': False})
 
  
-'''
+
 @socketio.on("submit message")
-def vote(data):
+def message(data):
     channel_name = data['channel_name']
     message_data = { 'text': data['message_text'],
                      'display_name': data['user_name'],
                      'timestamp': datetime.datetime.now().isoformat() }
     channels[channel_name].append(message_data)
     emit("new message", message_data, broadcast=True)
-'''
 
