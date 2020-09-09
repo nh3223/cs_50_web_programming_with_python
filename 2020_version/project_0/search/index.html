@@ -1,16 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
+        <link rel="stylesheet" href="styles.css">
         <title>Search</title>
     </head>
     <body>
-        <a href="image.html">Image Search</a>
-        <a href="advanced.html">Advanced Search</a>
-        <form action="https://google.com/search">
-            <input type="text" name="q">
-            <input type="submit" value="Google Search">
-            <input type="submit" name="btnI" value="I'm feeling lucky!">
-            <input type="hidden" name="iflsig" value="AINFCbYAAAAAX0rnoj_rfYy_2cvJ23_KHFIfoEnvCIQu">
-        </form>
+        <nav>
+            <a class="nav_link" href="image.html">Image</a>
+            <a class="nav_link" href="advanced.html">Advanced</a>
+        </nav>
+        <main class="search_content">
+            <img alt="Google" height="92" id="hplogo" src="googlelogo_color_272x92dp.png" width="272">
+            <form class="search_form" action="https://google.com/search">
+                <input class="search_box" type="text" name="q">
+                <br>
+                <input class="search_button" type="submit" value="Google Search">
+                <input class="search_button" type="submit" name="btnI" value="I'm feeling lucky!">
+                <input type="hidden" name="iflsig" value="AINFCbYAAAAAX0rnoj_rfYy_2cvJ23_KHFIfoEnvCIQu">
+            </form>
+        </main>
     </body>
 </html>
