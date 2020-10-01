@@ -1,8 +1,18 @@
-from django import forms
+from django.forms import ModelForm, IntegerField, HiddenInput
+from auctions.models import Listing, Bid
 
-class CreateListingForm(forms.Form)
-    title = forms.CharField(max_length=64)
-    description = forms.CharField(widget=forms.Textarea)
-    opening_bid = forms.DecimalField()
-    category = forms.CharField(max_length=64)
-    user = forms.IntegerField(widget=forms.HiddenInput())
+class CreateListingForm(ModelForm):
+    class Meta:
+        model = Listing
+        fields = ['title','description','opening_bid','category']
+
+class BidForm(ModelForm):
+    item = IntegerField(widget=HiddenInput())
+    bidder = IntegerField(widget=HiddenInput())
+    class Meta:
+        model = Bid
+        fields = ['bid','item','bidder']
+
+class CommentForm(ModelForm):
+    class Meta:
+        model = Comment

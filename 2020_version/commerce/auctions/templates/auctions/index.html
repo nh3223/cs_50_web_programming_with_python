@@ -6,14 +6,16 @@
     {% for listing in listings %}
 
         <ul>
+            {% if listing.active %}
             <li>
                 <a href="{% url 'listing' listing.id %}">
                     {{ listing }}
                 </a>
             </li>
+            {% endif %}
         </ul>
     {% empty %}
         No Listings
     {% endfor %}
-    
+
 {% endblock %}
