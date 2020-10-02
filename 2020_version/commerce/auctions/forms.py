@@ -1,10 +1,10 @@
 from django.forms import ModelForm, IntegerField, HiddenInput
-from auctions.models import Listing, Bid
+from auctions.models import Listing, Bid, Comment
 
 class CreateListingForm(ModelForm):
     class Meta:
         model = Listing
-        fields = ['title','description','opening_bid','category']
+        fields = ['title','description','starting_bid','category']
 
 class BidForm(ModelForm):
     item = IntegerField(widget=HiddenInput())
@@ -15,4 +15,4 @@ class BidForm(ModelForm):
 
 class CommentForm(ModelForm):
     class Meta:
-        model = Comment
+        pass

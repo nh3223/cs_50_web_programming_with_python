@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import Max
 from django.http import HttpResponse, HttpResponseRedirect
@@ -66,44 +67,43 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
-    @login_required
-    def create(request):
-        user_id = request.user.id
-        if request.method = "POST":
-            form = CreateListingForm(request.POST)
-            if form.is_valid:
-                new_listing = form.save()
-                new_listing.lister = request.use.id
-                new_listing.current_bid = new_listing.starting_bid
-                new_listing.save()
-                new_bid = Bid(bid = new_listing.starting_bid, bidder = new_listing.lister, item = new_listing.id))
-                return render(request, 'auctions/<int:new_listing.id>.html', {'listing': new_listing})
-            return render(request, 'auctions/create.html', {'form': form})                
-        return render(request, 'auctions/create.html', {'form': CreateListingForm})
+@login_required
+def create(request):
+    if request.method == "POST":
+        form = CreateListingForm(request.POST)
+        if form.is_valid:
+            new_listing = form.save()
+            new_listing.lister = request.user
+            new_listing.current_bid = new_listing.starting_bid
+            new_listing.save()
+            new_bid = Bid(bid = new_listing.starting_bid, bidder = new_listing.lister, item = new_listing)
+            return render(request, 'auctions/<int:new_listing.id>.html', {'listing': new_listing})
+        return render(request, 'auctions/create.html', {'form': form})                
+    return render(request, 'auctions/create.html', {'form': CreateListingForm})
 
-    def listing(request, listing):
-        form = BidForm(initial={'listing_id': listing.id, 'bidder': request.user})
-        return render(request, 'auctions/<int:listing.id>.html', {'listing': listing, 'user': request.user, 'form': form})
+def listing(request, listing):
+    form = BidForm(initial={'listing_id': listing.id, 'bidder': request.user})
+    return render(request, 'auctions/<int:listing.id>.html', {'listing': listing, 'user': request.user, 'form': form})
 
-    def bid(request):
-        if request.method == 'POST':
-            form = BidForm(request.POST)
-            if form.is_valid:
-                new_bid = form.cleaned_data['bid']
-                listing = Listing.objects.filter(id=form.cleaned_data['item'])
-                prior_bid = listing.current_bid
-                if new_bid > prior_bid:
-                    listing.current_bid = new_bid
-                else:
-                    message = 'Bid must be higher than the current bid'
-                form = BidForm(initial={'listing_id': listing.id, 'bidder': request.user})
-                return render(request, 'auctions/<int:listing.id>.html',
-                              {'listing': listing, 'user': request.user, 'form': form, 'message': message}))
-    
-    def comment(request):
-        if request.method == 'POST':
-            
+def bid(request):
+    if request.method == 'POST':
+        form = BidForm(request.POST)
+        if form.is_valid:
+            new_bid = form.cleaned_data['bid']
+            listing = Listing.objects.filter(id=form.cleaned_data['item'])
+            prior_bid = listing.current_bid
+            if new_bid > prior_bid:
+                listing.current_bid = new_bid
+            else:
+                message = 'Bid must be higher than the current bid'
+            form = BidForm(initial={'item': listing, 'bidder': request.user})
+            return render(request, 'auctions/<int:listing.id>.html',
+                            {'listing': listing, 'user': request.user, 'form': form, 'message': message})
 
-    def update_bid(listing):
-        listing.current_bid = Bid.objects.filter(listing_id = listing.id).filter(Max(bid))
-        listing.save()
+def comment(request):
+    pass
+
+
+def update_bid(listing):
+    listing.current_bid = Bid.objects.filter(item = listing).filter(Max(bid))
+    listing.save()
