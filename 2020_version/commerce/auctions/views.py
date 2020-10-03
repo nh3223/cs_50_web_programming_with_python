@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.db.models import Max
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
 
 from auctions.forms import CreateListingForm, BidForm
@@ -77,33 +77,38 @@ def create(request):
             new_listing.current_bid = new_listing.starting_bid
             new_listing.save()
             new_bid = Bid(bid = new_listing.starting_bid, bidder = new_listing.lister, item = new_listing)
-            return render(request, 'auctions/<int:new_listing.id>.html', {'listing': new_listing})
+            new_bid.save()
+            return render(request, 'auctions/listing.html', {'listing': new_listing})
         return render(request, 'auctions/create.html', {'form': form})                
     return render(request, 'auctions/create.html', {'form': CreateListingForm})
 
-def listing(request, listing):
-    form = BidForm(initial={'listing_id': listing.id, 'bidder': request.user})
-    return render(request, 'auctions/<int:listing.id>.html', {'listing': listing, 'user': request.user, 'form': form})
+def listing_view(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    return render(request, 'auctions/listing.html', {'listing': listing, 'user': request.user, 'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing})})
 
 def bid(request):
     if request.method == 'POST':
-        form = BidForm(request.POST)
-        if form.is_valid:
-            new_bid = form.cleaned_data['bid']
-            listing = Listing.objects.filter(id=form.cleaned_data['item'])
+        bidform = BidForm(request.POST)
+        if bidform.is_valid():
+            bid = bidform.cleaned_data['bid']
+            listing = bidform.cleaned_data['item']
             prior_bid = listing.current_bid
-            if new_bid > prior_bid:
-                listing.current_bid = new_bid
+            if bid > prior_bid:
+                listing.current_bid = bid
+                new_bid = Bid(bid=bid, bidder = request.user, item = listing)
+                new_bid.save()
+                listing.save()
+                return render(request, 'auctions/listing.html', {'listing': listing, 'user': request.user, 'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing})})
             else:
                 message = 'Bid must be higher than the current bid'
-            form = BidForm(initial={'item': listing, 'bidder': request.user})
-            return render(request, 'auctions/<int:listing.id>.html',
-                            {'listing': listing, 'user': request.user, 'form': form, 'message': message})
-
+                return render(request, 'auctions/listing.html', {'message': message, 'listing': listing, 'user': request.user, 'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}), 'message': message})
+    return redirect(reverse('listing'))
+    
 def comment(request):
     pass
 
 
 def update_bid(listing):
-    listing.current_bid = Bid.objects.filter(item = listing).filter(Max(bid))
+    bids = Bid.objects.filter(item=listing).values_list('bid', flat=True)
+    listing.current_bid = max(bids)
     listing.save()

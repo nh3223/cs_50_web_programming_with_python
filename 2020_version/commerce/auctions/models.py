@@ -15,7 +15,7 @@ class Listing(models.Model):
     winner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='won_items', blank=True, null=True, default=None)
 
     def __str__(self):
-        return f'{self.title}: {self.description}\nCurrent Bid: {self.current_bid}'
+        return f'{self.title}: {self.description}\nCurrent Bid: ${self.current_bid}'
 
 class Bid(models.Model):
     bid = models.DecimalField(max_digits=8, decimal_places=2)

@@ -8,7 +8,7 @@
         <ul>
             {% if listing.active %}
             <li>
-                <a href="{% url 'listing' listing.id %}">
+                <a href = "{% url 'listing_view' listing.id %}">
                     {{ listing }}
                 </a>
             </li>
