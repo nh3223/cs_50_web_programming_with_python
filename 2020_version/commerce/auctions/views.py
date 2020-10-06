@@ -107,8 +107,20 @@ def bid(request):
 def comment(request):
     pass
 
+def categories_view(request):
+    categories = Listing.objects.values_list('category', flat=True).distinct()
+    print(categories)
+    return render(request, 'auctions/categories.html', {'categories': categories})
+
+def category_view(request, category):
+    listings = Listing.objects.filter(category=category)
+    for listing in listings:
+        update_bid(listing)
+    return render(request, 'auctions/index.html', {'listings': listings, 'category': category})
+
 
 def update_bid(listing):
     bids = Bid.objects.filter(item=listing).values_list('bid', flat=True)
     listing.current_bid = max(bids)
     listing.save()
+
