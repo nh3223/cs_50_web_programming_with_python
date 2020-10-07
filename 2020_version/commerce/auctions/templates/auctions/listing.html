@@ -13,5 +13,18 @@
         {{ bidform }}
         <input type="Submit" value="Make New Bid">
     </form>
+
+    {% for comment in comments %}
+        {{ comment.user }}
+        {{ comment.comment }}
+    {% empty %}
+        No comments.
+    {% endfor %}
+
+    <form action ="{% url 'comment' %}" method="POST">
+        {% csrf_token %}
+        {{ commentform }}
+        <input type="Submit" value="Make Comment">
+    </form>
     
 {% endblock %}

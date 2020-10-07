@@ -1,4 +1,4 @@
-from django.forms import ModelForm, Form, IntegerField, HiddenInput, DecimalField, ModelChoiceField
+from django.forms import ModelForm, Form, HiddenInput, DecimalField, CharField, ModelChoiceField, Textarea
 from auctions.models import Listing, Bid, Comment
 
 class CreateListingForm(ModelForm):
@@ -10,6 +10,6 @@ class BidForm(Form):
     bid = DecimalField()
     item = ModelChoiceField(queryset = Listing.objects.all())
     
-class CommentForm(ModelForm):
-    class Meta:
-        pass
+class CommentForm(Form):
+    comment = CharField(widget=Textarea)
+    item = ModelChoiceField(queryset = Listing.objects.all())

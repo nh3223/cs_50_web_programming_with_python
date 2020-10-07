@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from auctions.forms import CreateListingForm, BidForm
+from auctions.forms import CreateListingForm, BidForm, CommentForm
 from auctions.models import Listing, Bid, Comment, User
 
 
@@ -84,7 +84,13 @@ def create(request):
 
 def listing_view(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
-    return render(request, 'auctions/listing.html', {'listing': listing, 'user': request.user, 'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing})})
+    comments = Comment.objects.filter(item=listing)
+    return render(request, 'auctions/listing.html', {
+        'listing': listing,
+        'comments': comments,
+        'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
+        'commentform': CommentForm(initial={'item': listing})
+        })
 
 def bid(request):
     if request.method == 'POST':
@@ -92,20 +98,47 @@ def bid(request):
         if bidform.is_valid():
             bid = bidform.cleaned_data['bid']
             listing = bidform.cleaned_data['item']
+            comments = Comment.objects.filter(item=listing)
             prior_bid = listing.current_bid
             if bid > prior_bid:
                 listing.current_bid = bid
                 new_bid = Bid(bid=bid, bidder = request.user, item = listing)
                 new_bid.save()
                 listing.save()
-                return render(request, 'auctions/listing.html', {'listing': listing, 'user': request.user, 'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing})})
+                return render(request, 'auctions/listing.html', {
+                    'listing': listing, 
+                    'comments': comments,
+                    'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
+                    'commentform': CommentForm(initial={'item': listing})
+                    })
             else:
                 message = 'Bid must be higher than the current bid'
-                return render(request, 'auctions/listing.html', {'message': message, 'listing': listing, 'user': request.user, 'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}), 'message': message})
+                return render(request, 'auctions/listing.html', {
+                    'listing': listing, 
+                    'comments': comments,
+                    'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
+                    'commentform': CommentForm(initial={'item': listing}),
+                    'message': message
+                    })
     return redirect(reverse('listing'))
     
 def comment(request):
-    pass
+    if request.method == 'POST':
+        commentform = CommentForm(request.POST)
+        if commentform.is_valid():
+            comment = commentform.cleaned_data['comment']
+            listing = commentform.cleaned_data['item']
+            new_comment = Comment(comment=comment, user = request.user, item=listing)
+            new_comment.save()
+            comments = Comment.objects.filter(item=listing)
+            return render(request, 'auctions/listing.html', {
+                'listing': listing, 
+                'comments': comments, 
+                'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
+                'commentform': CommentForm(initial={'item': listing})
+                })
+        return redirect(reverse('listing'))
+    return redirect(reverse('listing'))
 
 def categories_view(request):
     categories = Listing.objects.values_list('category', flat=True).distinct()
