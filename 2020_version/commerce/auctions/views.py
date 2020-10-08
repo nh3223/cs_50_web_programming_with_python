@@ -6,13 +6,13 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from auctions.forms import CreateListingForm, BidForm, CommentForm
+from auctions.forms import CreateListingForm, BidForm, CommentForm, CloseForm
 from auctions.models import Listing, Bid, Comment, User
 
 
 def index(request):
     listings = Listing.objects.all()
-    return render(request, "auctions/index.html", {'listings': listings})
+    return render(request, "auctions/index.html", get_index_view_context(listings))
 
 def login_view(request):
     if request.method == "POST":
@@ -61,7 +61,7 @@ def register(request):
                 "message": "Username already taken."
             })
         login(request, user)
-        return HttpResponseRedirect(reverse("index"))
+        return redirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
 
@@ -99,7 +99,7 @@ def bid(request):
             else:
                 message = 'Bid must be higher than the current bid'
                 return render(request, 'auctions/listing.html', get_listing_view_context(listing, message))
-    return redirect(reverse('listing'))
+    return redirect(reverse('listing_view'))
     
 def comment(request):
     if request.method == 'POST':
@@ -110,8 +110,8 @@ def comment(request):
             new_comment = Comment(comment=comment, user = request.user, item=listing)
             new_comment.save()
             return render(request, 'auctions/listing.html', get_listing_view_context(listing))
-        return redirect(reverse('listing'))
-    return redirect(reverse('listing'))
+        return redirect(reverse('listing_view'))
+    return redirect(reverse('listing_view'))
 
 def categories_view(request):
     categories = Listing.objects.values_list('category', flat=True).distinct()
@@ -119,16 +119,34 @@ def categories_view(request):
 
 def category_view(request, category):
     listings = Listing.objects.filter(category=category)
-    return render(request, 'auctions/index.html', {'listings': listings, 'category': category})
+    return render(request, 'auctions/index.html', get_index_view_context(listings, category))
+
+def close_auction(request):
+    if request.method == 'POST':
+        closeform = CloseForm(request.POST)
+        if closeform.is_valid():
+            listing = closeform.cleaned_data['item']
+            listing.active = False
+            listing.winner = Bid.objects.get(item=listing, bid=listing.current_bid).bidder
+            listing.save()
+            return render(request, 'auctions/listing.html', get_listing_view_context(listing))
+        return redirect(reverse('listing_view'))
+    return redirect(reverse('listing_view'))
+
+def get_index_view_context(listings, sub_index=None):
+    return {
+        'listings': listings,
+        'sub_index': sub_index
+    }
 
 def get_listing_view_context(listing, message=None):
     comments = Comment.objects.filter(item=listing)
-    context = {
+    return {
         'listing': listing,
         'comments': comments,
+        'message': message,
         'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
-        'commentform': CommentForm(initial={'item': listing})
+        'commentform': CommentForm(initial={'item': listing}),
+        'closeform': CloseForm(initial={'item': listing})
     }
-    if message:
-        context['message'] = message
-    return context
+

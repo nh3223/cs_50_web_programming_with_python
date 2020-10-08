@@ -13,3 +13,6 @@ class BidForm(Form):
 class CommentForm(Form):
     comment = CharField(widget=Textarea)
     item = ModelChoiceField(queryset = Listing.objects.all(), widget=HiddenInput())
+
+class CloseForm(Form):
+    item = ModelChoiceField(queryset = Listing.objects.all(), widget=HiddenInput())

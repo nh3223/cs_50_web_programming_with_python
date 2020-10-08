@@ -27,5 +27,17 @@
         {{ commentform }}
         <input type="Submit" value="Make Comment">
     </form>
+
+    {% if user == listing.lister and listing.active %}
+        <form action="{% url 'close_auction' %}" method="POST">
+            {% csrf_token %}
+            {{ closeform }}
+            <input type="Submit" value="Close Auction">
+        </form>
+    {% endif %}
+
+    {% if user == listing.winner %}
+        Congratulations! You have won this item at auction.
+    {% endif %}
     
 {% endblock %}
