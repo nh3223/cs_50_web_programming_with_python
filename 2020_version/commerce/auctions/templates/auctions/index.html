@@ -1,7 +1,11 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active {% if category %} {{ category}} {% endif %} Listings</h2>
+    <h2>Active 
+        {% if category %}
+            {{ category }}
+        {% endif %}
+         Listings</h2>
 
     {% for listing in listings %}
 

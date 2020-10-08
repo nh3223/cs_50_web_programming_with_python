@@ -3,6 +3,7 @@
 {% block body %}
 
     {{ listing }}
+    Listed by: {{ listing.lister }}
     
     {% if message %}
         {{ message }}

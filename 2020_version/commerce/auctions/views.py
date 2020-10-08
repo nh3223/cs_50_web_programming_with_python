@@ -12,8 +12,6 @@ from auctions.models import Listing, Bid, Comment, User
 
 def index(request):
     listings = Listing.objects.all()
-    for listing in listings:
-        update_bid(listing)
     return render(request, "auctions/index.html", {'listings': listings})
 
 def login_view(request):
@@ -78,19 +76,13 @@ def create(request):
             new_listing.save()
             new_bid = Bid(bid = new_listing.starting_bid, bidder = new_listing.lister, item = new_listing)
             new_bid.save()
-            return render(request, 'auctions/listing.html', {'listing': new_listing})
+            return render(request, 'auctions/listing.html', get_listing_view_context(new_listing))
         return render(request, 'auctions/create.html', {'form': form})                
     return render(request, 'auctions/create.html', {'form': CreateListingForm})
 
 def listing_view(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
-    comments = Comment.objects.filter(item=listing)
-    return render(request, 'auctions/listing.html', {
-        'listing': listing,
-        'comments': comments,
-        'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
-        'commentform': CommentForm(initial={'item': listing})
-        })
+    return render(request, 'auctions/listing.html', get_listing_view_context(listing))
 
 def bid(request):
     if request.method == 'POST':
@@ -98,28 +90,15 @@ def bid(request):
         if bidform.is_valid():
             bid = bidform.cleaned_data['bid']
             listing = bidform.cleaned_data['item']
-            comments = Comment.objects.filter(item=listing)
-            prior_bid = listing.current_bid
-            if bid > prior_bid:
+            if bid > listing.current_bid:
                 listing.current_bid = bid
                 new_bid = Bid(bid=bid, bidder = request.user, item = listing)
                 new_bid.save()
                 listing.save()
-                return render(request, 'auctions/listing.html', {
-                    'listing': listing, 
-                    'comments': comments,
-                    'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
-                    'commentform': CommentForm(initial={'item': listing})
-                    })
+                return render(request, 'auctions/listing.html', get_listing_view_context(listing))
             else:
                 message = 'Bid must be higher than the current bid'
-                return render(request, 'auctions/listing.html', {
-                    'listing': listing, 
-                    'comments': comments,
-                    'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
-                    'commentform': CommentForm(initial={'item': listing}),
-                    'message': message
-                    })
+                return render(request, 'auctions/listing.html', get_listing_view_context(listing, message))
     return redirect(reverse('listing'))
     
 def comment(request):
@@ -130,30 +109,26 @@ def comment(request):
             listing = commentform.cleaned_data['item']
             new_comment = Comment(comment=comment, user = request.user, item=listing)
             new_comment.save()
-            comments = Comment.objects.filter(item=listing)
-            return render(request, 'auctions/listing.html', {
-                'listing': listing, 
-                'comments': comments, 
-                'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
-                'commentform': CommentForm(initial={'item': listing})
-                })
+            return render(request, 'auctions/listing.html', get_listing_view_context(listing))
         return redirect(reverse('listing'))
     return redirect(reverse('listing'))
 
 def categories_view(request):
     categories = Listing.objects.values_list('category', flat=True).distinct()
-    print(categories)
     return render(request, 'auctions/categories.html', {'categories': categories})
 
 def category_view(request, category):
     listings = Listing.objects.filter(category=category)
-    for listing in listings:
-        update_bid(listing)
     return render(request, 'auctions/index.html', {'listings': listings, 'category': category})
 
-
-def update_bid(listing):
-    bids = Bid.objects.filter(item=listing).values_list('bid', flat=True)
-    listing.current_bid = max(bids)
-    listing.save()
-
+def get_listing_view_context(listing, message=None):
+    comments = Comment.objects.filter(item=listing)
+    context = {
+        'listing': listing,
+        'comments': comments,
+        'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
+        'commentform': CommentForm(initial={'item': listing})
+    }
+    if message:
+        context['message'] = message
+    return context
