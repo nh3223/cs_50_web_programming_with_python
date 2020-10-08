@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render, redirect
 from django.urls import reverse
 
-from auctions.forms import CreateListingForm, BidForm, CommentForm, CloseForm
+from auctions.forms import CreateListingForm, BidForm, CommentForm, CloseForm, WatchlistForm
 from auctions.models import Listing, Bid, Comment, User
 
 
@@ -133,6 +133,22 @@ def close_auction(request):
         return redirect(reverse('listing_view'))
     return redirect(reverse('listing_view'))
 
+def watchlist(request):
+    if request.method == 'POST':
+        watchlistform = WatchlistForm(request.POST)
+        if watchlistform.is_valid():
+            listing = watchlistform.cleaned_data['item']
+            listing.watcher.add(request.user)
+            listing.save()
+            listings = request.user.watched_items.all()
+            return render(request, 'auctions/index.html', get_index_view_context(listings, 'Watched'))
+        return redirect(reverse('listing_view'))
+    return redirect(reverse('listing_view'))
+
+def watchlist_view(request, user_id):
+    listings = request.user.watched_items.all()
+    return render(request, 'auctions/index.html', get_index_view_context(listings, 'Watched'))
+
 def get_index_view_context(listings, sub_index=None):
     return {
         'listings': listings,
@@ -147,6 +163,7 @@ def get_listing_view_context(listing, message=None):
         'message': message,
         'bidform': BidForm(initial={'bid': listing.current_bid, 'item': listing}),
         'commentform': CommentForm(initial={'item': listing}),
-        'closeform': CloseForm(initial={'item': listing})
+        'closeform': CloseForm(initial={'item': listing}),
+        'watchlistform': WatchlistForm(initial={'item': listing})
     }
 

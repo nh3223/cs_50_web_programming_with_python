@@ -16,3 +16,6 @@ class CommentForm(Form):
 
 class CloseForm(Form):
     item = ModelChoiceField(queryset = Listing.objects.all(), widget=HiddenInput())
+
+class WatchlistForm(Form):
+    item = ModelChoiceField(queryset = Listing.objects.all(), widget=HiddenInput())

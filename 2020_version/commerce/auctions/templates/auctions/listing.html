@@ -27,6 +27,12 @@
         {{ commentform }}
         <input type="Submit" value="Make Comment">
     </form>
+    
+    <form action ="{% url 'watchlist' %}" method="POST">
+        {% csrf_token %}
+        {{ watchlistform }}
+        <input type="Submit" value="Add to Watchlist">
+    </form>
 
     {% if user == listing.lister and listing.active %}
         <form action="{% url 'close_auction' %}" method="POST">
