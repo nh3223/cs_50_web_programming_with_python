@@ -22,6 +22,22 @@ function compose_email() {
   document.querySelector('#compose-body').value = '';
 }
 
+function send_email() {
+  fetch('/emails', {
+    method: 'POST',
+    body: JSON.stringify({
+      recipients: document.querySelector('#compose-recipients').value,
+      subject: document.querySelector('#compose-subject').value,
+      body: document.querySelector('#compose-body').value
+    })
+  })
+  //.then(response => response.json())
+  .then(response => {
+    console.log(response)
+  })
+}
+
+
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
@@ -30,4 +46,23 @@ function load_mailbox(mailbox) {
 
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+  // Retrieve and show emails
+  fetch('/emails/' + mailbox)
+  .then(response => response.json())
+  .then(emails => {
+    emails.forEach(email => {
+      let email_details = '<div class="email-detail '
+      if (email['read'] == true) {
+        email_details += 'style="background-color: gray '
+      }
+      email_details += `>From: ${email['sender']}<span class="tab">`
+      email_details += `Subject: ${email['subject']}</span><span class="tab">`
+      email_details += `Time: ${email['timestamp']}</span></div>`
+      document.querySelector('#emails-view').innerHTML += email_details
+    })
+  });
+   
+
+  //document.querySelector('#emails-view').append(element);
 }

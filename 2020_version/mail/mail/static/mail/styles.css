@@ -1,3 +1,16 @@
 textarea {
     min-height: 400px;
 }
+
+.email-detail {
+    border-width: 2px;
+    border-color: black;
+    border-style: solid;
+    margin: 5px;
+    padding: 5px;
+}
+
+.tab {
+    display: inline-block;
+    margin-left: 40px;
+}
