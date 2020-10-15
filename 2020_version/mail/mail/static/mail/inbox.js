@@ -4,13 +4,14 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
   document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
-  document.querySelector('#compose').addEventListener('click', compose_email);
+  document.querySelector('#compose').addEventListener('click', () => compose_email(null));
+  
 
   // By default, load the inbox
   load_mailbox('inbox');
 });
 
-function compose_email() {
+function compose_email(email) {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
@@ -18,9 +19,16 @@ function compose_email() {
   document.querySelector('#compose-view').style.display = 'block';
 
   // Clear out composition fields
-  document.querySelector('#compose-recipients').value = '';
-  document.querySelector('#compose-subject').value = '';
-  document.querySelector('#compose-body').value = '';
+  if (email === null) {
+    document.querySelector('#compose-recipients').value = '';
+    document.querySelector('#compose-subject').value = '';
+    document.querySelector('#compose-body').value = '';
+  } else {
+    // Populate Fields on Reply
+    document.querySelector('#compose-recipients').value = `${email['sender']}`
+    document.querySelector('#compose-subject').value =  `Re: ${email['subject']}`
+    document.querySelector('#compose-body').value = `On ${email['timestamp']}, ${email['sender']} wrote: \n${email['body']}`
+  }
 }
 
 function send_email() {
@@ -45,7 +53,7 @@ function load_mailbox(mailbox) {
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#read-email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
-
+  
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
@@ -54,7 +62,6 @@ function load_mailbox(mailbox) {
   .then(response => response.json())
   .then(emails => {
     let email_details = format_inbox(emails)
-    console.log(email_details)
     document.querySelector('#emails-view').innerHTML += email_details
   });
 }
@@ -72,6 +79,8 @@ function load_email(email_id) {
   .then(email => {
     let email_content = format_email_content(email)
     document.querySelector('#read-email-view').innerHTML = email_content
+    document.querySelector('#archive').addEventListener('click', () => archive_email(email))
+    document.querySelector('#reply').addEventListener('click', () => compose_email(email));
   });
 
   // Mark email as read
@@ -83,12 +92,26 @@ function load_email(email_id) {
   })
 }
 
+function archive_email(email) {
+  if (email['archived'] === true) {
+    archive_value = false
+  } else {
+    archive_value = true
+  }
+  fetch('/emails/' + email['id'], {
+    method: 'PUT',
+    body: JSON.stringify({
+      archived: archive_value
+    })
+  })
+  .then(load_mailbox('inbox'));
+}
+
 function format_inbox(emails) {
   let email_details = ''
   emails.forEach(email => {
     email_details += `<div class="email-detail" onclick="load_email(${email['id']})" style="cursor:pointer;` 
     if (email['read'] == true) {
-      console.log('TRUE')
       email_details += 'background-color: gray;'
     }
     email_details += '">'
@@ -106,7 +129,7 @@ function format_email_content(email) {
   email_content += `To: ${email['recipients']}<hr>`
   email_content += `Time: ${email['timestamp']}<hr>`
   email_content += `Subject: ${email['subject']}<hr>`
-  email_content += `Body: ${email['body']}</div>`
+  email_content += `Body: ${email['body']}</div><hr>`
 
   // Add archive button
   let button_value = 'Archive'
@@ -114,5 +137,8 @@ function format_email_content(email) {
     button_value = 'Remove from Archive'
   }
   email_content += `<button class="btn btn-sm btn-outline-primary" id="archive">${button_value}</button>`
+  
+  // Add reply button
+  email_content += '<button class="btn btn-sm btn-outline-primary" id="reply">Reply</button>'
   return email_content
 }
