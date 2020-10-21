@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Use buttons to toggle between views
     document.querySelector('#all_posts').addEventListener('click', () => get_posts('all_posts'));
     document.querySelector('#following').addEventListener('click', () => get_posts('following'));
-    //document.querySelector('#profile').addEventListener('click', () => get_posts('profile'));
+    document.querySelector('#current_user').addEventListener('click', () => get_posts('current_user'));
     document.querySelector('#new_post').addEventListener('click', () => compose_post(null));
     //document.querySelector('#edit_post').addEventListener('click', () => compose_post(post));  
   
@@ -21,17 +21,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
 }
 
-function get_posts(posts) {
+function get_posts(posts, user=null) {
 
     // Hide New/Edit Post Form
     document.querySelector('#compose_view').style.display='none'  
     
+    // Identify Profile Posts
+    if (posts == 'current_user') {
+        profile_name = document.getElementById('current_user').innerHTML.slice(8,-9)
+        posts = 'profile'
+    } else if (posts == 'profile') {
+        profile_name = user
+    } else {
+        profile_name = posts
+    }
+
     // Show the Posts View Name
-    post_view_names = {'all_posts': 'All Posts', 'following': 'Following'}
+    post_view_names = {'all_posts': 'All Posts', 'following': 'Following', 'profile': profile_name}
     document.querySelector('#post_view').innerHTML = `<h3>${post_view_names[posts]}</h3>`;
   
     // Retrieve and show emails
-    fetch('/posts/' + posts)
+    
+    path = `/posts/${posts}`
+    if (profile_name != '') {
+        path += `/${profile_name}`
+    }
+
+    fetch(`/posts/${profile_name}`)
     .then(response => response.json())
     .then(posts => {
       console.log(posts)
@@ -67,11 +83,9 @@ function make_post() {
 function format_posts(posts) {
     let post_details = ''
     posts.forEach(post => {
-      console.log(post['author'],post['content'],post['timestamp'])
-      post_details += `<div class="post_detail" style="cursor:pointer;">` 
-      post_details += `Author: ${post['author']}<span class="tab">`
+      post_details += `<div class="profile" onclick="get_posts('profile','${post['author']}')" style="cursor:pointer;">Author: ${post['author']}</div><span class="tab">`
       post_details += `Content: ${post['content']}</span><span class="tab">`
-      post_details += `Time: ${post['timestamp']}</span></div>`
+      post_details += `Time: ${post['timestamp']}</span>`
     });
     return post_details;
 }

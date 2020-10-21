@@ -90,25 +90,19 @@ def compose(request, post=None):
 
     return JsonResponse({"message": "Posted successfully."}, status=201)
 
-def posts(request, post_view):
-    
-    # Filter emails returned based on mailbox
-    if post_view == "all_posts":
-        posts = Post.objects.all()
-    
-    elif post_view == "following":
-        pass
-        #emails = Email.objects.filter(
-        #    user=request.user, sender=request.user
-        #)
-    elif post_view == "profile":
-        pass
-        #emails = Email.objects.filter(
-        #    user=request.user, recipients=request.user, archived=True
-        #)
-    else:
-        return JsonResponse({"error": "Invalid Post View"}, status=400)
+def all_posts(request):
+    posts = Post.objects.all()
+    return get_posts(posts)
 
-    # Return emails in reverse chronologial order
+def following_posts(request):
+    pass
+
+def profile_posts(request, user_name):
+    user = User.objects.get(username=user_name)
+    posts = Post.objects.filter(author=user)
+    return get_posts(posts)
+
+def get_posts(posts):
     posts = posts.order_by("-timestamp").all()
+    print(posts)
     return JsonResponse([post.serialize_post() for post in posts], safe=False)
