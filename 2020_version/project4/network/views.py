@@ -104,5 +104,4 @@ def profile_posts(request, user_name):
 
 def get_posts(posts):
     posts = posts.order_by("-timestamp").all()
-    print(posts)
     return JsonResponse([post.serialize_post() for post in posts], safe=False)
