@@ -67,27 +67,24 @@ def register(request):
 
 @csrf_exempt
 @login_required
-def compose(request, post=None):
-
-    print('Start compose view')
-    print(request.method)
-    # Adding a post must be via POST or PUT
-    if request.method != "POST" and request.method != "PUT":
-        print('Not post or put')
-        return JsonResponse({"error": "POST or PUT request required."}, status=400)
-    
-    # Create post
-    author = request.user
-    print(author)
+def compose(request, post_id=None):
+    # Get post content
+    print('compose')
     content = json.loads(request.body).get('content','')
     print(content)
-    if request.method == 'POST':
+    # Create new post
+    if request.method == "POST":
+        author = request.user
         post = Post(author=author, content=content)
-        print(post.author,post.content)
-    else:
+    # Edit post
+    elif request.method == "PUT":
+        post = Post.objects.get(pk=post_id)
         post.content = content
+    # Return error
+    else:
+        return JsonResponse({"error": "POST or PUT request required."}, status=400)
+    # Save post and return success message
     post.save()
-
     return JsonResponse({"message": "Posted successfully."}, status=201)
 
 def all_posts(request):

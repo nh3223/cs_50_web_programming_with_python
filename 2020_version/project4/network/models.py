@@ -13,7 +13,7 @@ class Post(Model):
     liked_by = ManyToManyField(User, blank=True, related_name='liked_posts')
 
     def serialize_post(self):
-        return {'author': self.author.username, 'content':self.content, 'timestamp': self.timestamp}
+        return {'id': self.id, 'author': self.author.username, 'content':self.content, 'timestamp': self.timestamp}
 
 class Follow(Model):
     follower = ForeignKey(User, on_delete=CASCADE, related_name='following_users')
