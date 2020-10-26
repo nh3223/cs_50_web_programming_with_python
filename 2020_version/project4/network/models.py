@@ -19,5 +19,3 @@ class Follow(Model):
     follower = ForeignKey(User, on_delete=CASCADE, related_name='following_users')
     following = ForeignKey(User, on_delete=CASCADE, related_name='followed_users')
 
-    def serialize_follow(self):
-        return serialize('json', Follow.objects.all())

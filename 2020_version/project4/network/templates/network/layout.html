@@ -18,7 +18,7 @@
               <ul class="navbar-nav mr-auto">
                 {% if user.is_authenticated %}
                     <li class="nav-item">
-                        <a class="nav-link" id="current_user" href="#"><strong>{{ user.username }}</strong></a>
+                        <a class="nav-link" id="current_user_element" href="#"><strong>{{ user.username }}{{ user.username|json_script:'current_user' }}</strong></a>
                     </li>                    
                     <li class="nav-item">
                         <a class="nav-link" id="new_post" href="#">New Post</a>
