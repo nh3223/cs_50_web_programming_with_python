@@ -1,31 +1,22 @@
 function get_posts(post_view_name, user_name=null) {
-
-    clear_post_view()
+    
     const current_user = JSON.parse(document.getElementById('current_user').textContent)
+    document.getElementById('compose_view').style.display='none'
     show_post_header(post_view_name, user_name, current_user)
     if (user_name) {
         show_followers(user_name, current_user)
         post_view_name = user_name
+    } else {
+        document.getElementById('follow_table').style.display='none'
     }
     show_posts(post_view_name, current_user)
 
 }
 
-function get_post_view_element() {
-    return document.querySelector('#post_view')
-}
-
-function clear_post_view() {
-    document.querySelector('#compose_view').style.display='none'  
-    get_post_view_element().innerHTML = ''
-}
-
 function show_post_header(post_view_name, user, current_user) {
     const header_name = {'all_posts': 'All Posts', 'following': 'Following', 'profile': `${user}`, 'current_user': current_user}
-    post_view_header = document.createElement('h3')
-    post_view_header_text = document.createTextNode(header_name[post_view_name])
-    post_view_header.appendChild(post_view_header_text)
-    get_post_view_element().appendChild(post_view_header)
+    post_view_header = document.getElementById('post_header')
+    post_view_header.innerHTML = header_name[post_view_name]
 }
 
 function show_followers(user_name, current_user) {
@@ -33,34 +24,38 @@ function show_followers(user_name, current_user) {
     fetch(`/posts/follows/${user_name}`)
     .then(response => response.json())
     .then(follows => {
-        const follow_details = format_follows(follows, user_name, current_user)
-        get_post_view_element().appendChild(follow_details)
+        format_follows(follows, user_name, current_user)
     })
 }
 
 function format_follows(follows, user_name, current_user) {
-    follow_element = document.createElement('div')
-    follow_element.appendChild(get_followers_and_following(follows))
+    document.getElementById('follow_table').innerHTML = ''
+    add_followers_and_following(follows)
     if (user_name != current_user) {
-        follow_element.appendChild(get_follow_button(follows['following'], user_name))
+        add_follow_button(follows['following'], user_name)
     }
-    return follow_element
 }
 
-function get_followers_and_following(follows) {
-    followers_and_following = document.createElement('h4')
-    follow_text = document.createTextNode(`Followers: ${follows['number_followers']} Following: ${follows['number_following']}`)
-    followers_and_following.appendChild(follow_text)
-    return followers_and_following
+function add_followers_and_following(follows) {
+    followers_row = document.createElement('tr')
+    followers = document.createElement('td')
+    followers.innerHTML = `Followers: ${follows.number_followers}`
+    following = document.createElement('td')
+    following.innerHTML = `Following: ${follows.number_following}`
+    followers_row.appendChild(followers)
+    followers_row.appendChild(following)
+    document.getElementById('follow_table').appendChild(followers_row)
 }
 
-function get_follow_button(following, user_name) {
-    console.log('following',following)
+function add_follow_button(following, user_name) {
+    follow_button_cell = document.createElement('td')
     follow_button = document.createElement('button')
     button_text = (following) ? 'Unfollow':'Follow'
     follow_button.innerHTML = button_text
     follow_button.addEventListener('click', () => follow(following, user_name))
-    return follow_button
+    follow_button_cell.appendChild(follow_button)
+    console.log(follow_button_cell)
+    document.getElementById('follow_table').appendChild(follow_button_cell)
 }
 
 function follow(following, user_name) {
@@ -76,56 +71,71 @@ function follow(following, user_name) {
 }
 
 function show_posts(post_view_name, current_user) {
-
     fetch(`/posts/${post_view_name}`)
     .then(response => response.json())
     .then(posts => {
-      const all_posts = format_posts(posts, current_user)
-      get_post_view_element().appendChild(all_posts)
+        format_posts(posts, current_user)
     })
-
 }
 
 function format_posts(posts, current_user) {
-    let all_posts = document.createElement('table')
+    document.getElementById('post_table').innerHTML = ''
     posts.forEach(post => {
-        post_details = document.createElement('tr')
-        author_cell = create_author_cell(post)
-        content_cell = create_content_cell(post)
-        time_cell = create_time_cell(post)
-        edit_cell = create_edit_cell(post, current_user)
-        row_cells = [author_cell, content_cell, time_cell, edit_cell]
-        post_details = get_post_details(row_cells)
-        all_posts.appendChild(post_details)
+        console.log(post)
+        create_and_populate_row(post, current_user)
     })
-    return all_posts
 }
 
-function create_author_cell(post) {
-    author_cell = document.createElement('td')
-    author_cell.classList.add('post_author')
-    author_cell.addEventListener('click', () => get_posts('profile',post['author']))
+async function create_and_populate_row(post, current_user) {
+    all_posts = await document.getElementById('post_table')
+    const cell_names = ['author', 'content', 'time', 'like', 'like_button', 'edit']
+    await create_post_row(post.id, cell_names)
+    add_post_content(post, current_user)
+} 
+
+function create_post_row(post_id, cell_names) {
+    // Create cells
+    all_posts = document.getElementById('post_table')
+    let row = document.createElement('tr')
+    cell_names.forEach(name => {
+        let cell = document.createElement('td')
+        cell.id = `${name}_${post_id}`
+        cell.classList.add(`${name}`)
+        row.appendChild(cell)
+    all_posts.appendChild(row)
+    })
+}
+
+function add_post_content(post, current_user) {
+    add_author_content(post)
+    add_content_content(post)
+    add_time_content(post)
+    add_like_content(post)
+    add_like_button_content(post, current_user)
+    add_edit_content(post, current_user)
+}
+
+function add_author_content(post) {
+    author_cell = document.getElementById(`author_${post.id}`)
+    author_cell.addEventListener('click', () => get_posts('profile', post['author']))
     author_text = document.createTextNode(`${post['author']}`)
     author_cell.appendChild(author_text)
-    return author_cell
 }
 
-function create_content_cell(post) {
-    content_cell = document.createElement('td')
+function add_content_content(post) {
+    content_cell = document.getElementById(`content_${post.id}`)
     content_text = document.createTextNode(`${post['content']}`)
     content_cell.appendChild(content_text)
-    return content_cell
 }
 
-function create_time_cell(post) {
-    time_cell = document.createElement('td')
+function add_time_content(post) {
+    time_cell = document.getElementById(`time_${post.id}`)
     time_text = document.createTextNode(`${post['timestamp']}`)
     time_cell.appendChild(time_text)
-    return time_cell
 }
 
-function create_edit_cell(post, current_user) {
-    edit_cell = document.createElement('td')
+function add_edit_content(post, current_user) {
+    edit_cell = document.getElementById(`edit_${post.id}`)
     if (current_user != post['author']) {
         return edit_cell
     }
@@ -137,10 +147,40 @@ function create_edit_cell(post, current_user) {
     return edit_cell
 }
 
-function get_post_details(row_cells) {
-    post_details = document.createElement('tr')
-    row_cells.forEach( function(cell) {
-        post_details.appendChild(cell)
+function add_like_content(post) {    
+    like_cell = document.getElementById(`like_${post.id}`)
+    like_cell.innerHTML = ''
+    like_cell_text = document.createTextNode(`Likes: ${post.likes.length}`)
+    like_cell.appendChild(like_cell_text)
+}
+    
+function add_like_button_content(post, current_user) {
+    let like_cell = document.getElementById(`like_button_${post.id}`)
+    like_cell.innerHTML = ''
+    console.log(post.likes)
+    let user_likes = post.likes.includes(current_user)
+    console.log(user_likes)
+    if (current_user !=post.author) {
+        let like_button = document.createElement('button')
+        like_button.id = `like_button_button_${post.id}`
+        like_button.innerHTML = (user_likes) ? 'Unlike':'Like'
+        like_button.addEventListener('click', () => like(post, current_user))
+    like_cell.appendChild(like_button)
+    }
+}
+
+function like(post, current_user) {
+
+    liked = post.likes.includes(current_user)
+    fetch(`/posts/like/${post.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            'liked': liked
+        })
     })
-    return post_details
+    .then(response => response.json())
+    .then(post => {
+        add_like_content(post)
+        add_like_button_content(post)
+    })
 }

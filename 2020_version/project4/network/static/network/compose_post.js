@@ -56,12 +56,15 @@ function make_post() {
 }
 
 function edit_post(post) {
-    fetch(`/posts/${post['id']}`, {
+    fetch(`/posts/${post.id}`, {
         method: 'PUT',
         body: JSON.stringify({
             content: document.querySelector('#post_content').value
         })
     })
     .then(response => response.json())
-    .then(get_posts('all_posts'));
+    .then( () => {
+        const current_user = JSON.parse(document.getElementById('current_user').textContent)
+        show_posts('all_posts', current_user);
+    })
 }

@@ -68,6 +68,9 @@ def register(request):
 @csrf_exempt
 @login_required
 def compose(request, post_id=None):
+    
+    if request.method != 'POST' and request.method != 'PUT':
+        return JsonResponse({"error": "POST or PUT request required."}, status=400)
     # Get post content
     content = json.loads(request.body).get('content','')
     # Create new post
@@ -75,12 +78,9 @@ def compose(request, post_id=None):
         author = request.user
         post = Post(author=author, content=content)
     # Edit post
-    elif request.method == "PUT":
-        post = Post.objects.get(pk=post_id)
-        post.content = content
-    # Return error
     else:
-        return JsonResponse({"error": "POST or PUT request required."}, status=400)
+        post = Post.objects.get(pk=post_id)
+        post.content = content   
     # Save post and return success message
     post.save()
     return JsonResponse({"message": "Posted successfully."}, status=201)
@@ -93,7 +93,7 @@ def following_posts(request):
     following_users = [follow.following for follow in Follow.objects.filter(follower=request.user).all()]
     posts = Post.objects.none()
     for user in following_users:
-        following_posts = Post.objects.filter(author=user).all()
+        #following_posts = Post.objects.filter(author=user).all()
         posts = posts|Post.objects.filter(author=user).all()
     return get_posts(posts)
 
@@ -103,7 +103,6 @@ def follows(request, user_name):
     number_followers = len(Follow.objects.filter(following=user))
     number_following = len(Follow.objects.filter(follower=user))
     following = True if Follow.objects.filter(follower=current_user, following=user) else False
-    print(following)
     return JsonResponse({'number_followers': number_followers, 'number_following': number_following, 'following': following})
 
 @csrf_exempt
@@ -111,18 +110,33 @@ def follows(request, user_name):
 def follow(request, user_name):
     current_user = get_user(request)
     user = User.objects.get(username=user_name)
-    
     following = json.loads(request.body).get('following','')
-    print(following, current_user, user)
     if following:
         follow_user = Follow(follower=current_user, following=user)
         follow_user.save()
         return JsonResponse({'message': 'User Followed'}, status=201)
     else:
-        print('unfollow')
         follow_user = Follow.objects.filter(follower=current_user,following=user)
         follow_user.delete()
         return JsonResponse({'message': 'User Unfollowed'}, status=201)
+
+@csrf_exempt
+@login_required
+def like(request, post_id):
+    if request.method != 'PUT':
+        return JsonResponse({'error': 'Not a PUT method'}, status=400)
+    current_user = get_user(request)
+    post = Post.objects.get(pk=post_id)
+    liked = json.loads(request.body).get('liked','')
+    print('liked',liked)
+    print(current_user)
+    if not liked:
+        print('false')
+        post.liked_by.add(current_user)
+    else:
+        post.liked_by.remove(current_user)
+    post.save()
+    return JsonResponse(get_post_serialized(post), status=201)
 
 def profile_posts(request, user_name):
     user = User.objects.get(username=user_name)
@@ -131,4 +145,8 @@ def profile_posts(request, user_name):
 
 def get_posts(posts):
     posts = posts.order_by("-timestamp").all()
-    return JsonResponse([post.serialize_post() for post in posts], safe=False)
+    return JsonResponse([get_post_serialized(post) for post in posts], safe=False)
+
+def get_post_serialized(post):
+    likers = [user.username for user in post.liked_by.all()]
+    return post.serialize_post(likers)
