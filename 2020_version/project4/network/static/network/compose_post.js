@@ -1,5 +1,6 @@
 function compose_post(post) {
     document.querySelector('#compose_view').style.display = 'block';
+    document.querySelector('#compose_view').innerHTML = ''
     document.querySelector('#compose_view').appendChild(get_post_form(post))
 }
 

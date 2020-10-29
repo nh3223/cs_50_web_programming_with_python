@@ -1,6 +1,7 @@
 import json
 from django.contrib.auth import authenticate, login, logout, get_user
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render, redirect
@@ -8,7 +9,6 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import User, Post, Follow
-
 
 def index(request):
     return render(request, "network/index.html")
@@ -85,17 +85,17 @@ def compose(request, post_id=None):
     post.save()
     return JsonResponse({"message": "Posted successfully."}, status=201)
 
-def all_posts(request):
+def all_posts(request, page):
     posts = Post.objects.all()
-    return get_posts(posts)
+    return get_posts(posts, page)
 
-def following_posts(request):
+def following_posts(request, page):
     following_users = [follow.following for follow in Follow.objects.filter(follower=request.user).all()]
     posts = Post.objects.none()
     for user in following_users:
         #following_posts = Post.objects.filter(author=user).all()
         posts = posts|Post.objects.filter(author=user).all()
-    return get_posts(posts)
+    return get_posts(posts, page)
 
 def follows(request, user_name):
     current_user = request.user
@@ -138,14 +138,21 @@ def like(request, post_id):
     post.save()
     return JsonResponse(get_post_serialized(post), status=201)
 
-def profile_posts(request, user_name):
+def profile_posts(request, user_name, page):
     user = User.objects.get(username=user_name)
     posts = Post.objects.filter(author=user)
-    return get_posts(posts)
+    return get_posts(posts, page)
 
-def get_posts(posts):
+def get_posts(posts, page):
     posts = posts.order_by("-timestamp").all()
-    return JsonResponse([get_post_serialized(post) for post in posts], safe=False)
+    last_page = 1 + len(posts) // 10
+    posts = paginate(posts, page)
+    response = {'posts': [get_post_serialized(post) for post in posts], 'page': page, 'last_page': last_page}
+    return JsonResponse(response, safe=False)
+
+def paginate(posts, page):
+    paginator = Paginator(posts, 10)
+    return paginator.get_page(page)
 
 def get_post_serialized(post):
     likers = [user.username for user in post.liked_by.all()]

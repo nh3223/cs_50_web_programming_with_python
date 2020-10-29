@@ -10,7 +10,6 @@ function get_posts(post_view_name, user_name=null) {
         document.getElementById('follow_table').style.display='none'
     }
     show_posts(post_view_name, current_user)
-
 }
 
 function show_post_header(post_view_name, user, current_user) {
@@ -54,7 +53,6 @@ function add_follow_button(following, user_name) {
     follow_button.innerHTML = button_text
     follow_button.addEventListener('click', () => follow(following, user_name))
     follow_button_cell.appendChild(follow_button)
-    console.log(follow_button_cell)
     document.getElementById('follow_table').appendChild(follow_button_cell)
 }
 
@@ -70,18 +68,20 @@ function follow(following, user_name) {
     .then(get_posts('profile', user_name))
 }
 
-function show_posts(post_view_name, current_user) {
-    fetch(`/posts/${post_view_name}`)
+function show_posts(post_view_name, current_user, page=1) {
+    console.log('show_posts', page)
+    fetch(`/posts/${post_view_name}/${page}`)
     .then(response => response.json())
     .then(posts => {
-        format_posts(posts, current_user)
+        format_posts(posts.posts, current_user)
+        console.log(posts.page)
+        show_pagination(post_view_name, current_user, posts.page, posts.last_page)
     })
 }
 
 function format_posts(posts, current_user) {
     document.getElementById('post_table').innerHTML = ''
     posts.forEach(post => {
-        console.log(post)
         create_and_populate_row(post, current_user)
     })
 }
@@ -157,9 +157,7 @@ function add_like_content(post) {
 function add_like_button_content(post, current_user) {
     let like_cell = document.getElementById(`like_button_${post.id}`)
     like_cell.innerHTML = ''
-    console.log(post.likes)
     let user_likes = post.likes.includes(current_user)
-    console.log(user_likes)
     if (current_user !=post.author) {
         let like_button = document.createElement('button')
         like_button.id = `like_button_button_${post.id}`
@@ -183,4 +181,28 @@ function like(post, current_user) {
         add_like_content(post)
         add_like_button_content(post)
     })
+}
+
+function show_pagination(post_view_name, current_user, page, last_page) {
+    console.log('show_pagination', page, last_page)
+    document.getElementById('pagination').innerHTML = ''
+    if (page != 1) {
+        create_page_button(post_view_name, current_user, 'Previous', page)
+    }
+    document.getElementById('pagination').appendChild(document.createTextNode(`Page ${page}`))
+    if (page != last_page) {
+        create_page_button(post_view_name, current_user, 'Next', page)
+    }
+}
+
+function create_page_button(post_view_name, current_user, button_type, page) {
+    console.log('create_page_button', page)
+    let page_button = document.createElement('button')
+    page_button.innerHTML = button_type
+    if (button_type == 'Previous') {
+        page_button.addEventListener('click', () => show_posts(post_view_name, current_user, page - 1))
+    } else {
+        page_button.addEventListener('click', () => show_posts(post_view_name, current_user, page + 1))
+    }
+    document.getElementById('pagination').appendChild(page_button)
 }
